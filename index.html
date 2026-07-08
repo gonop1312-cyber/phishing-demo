@@ -131,8 +131,13 @@
     box-shadow:0 0 18px rgba(57,255,136,.6);transition:width .15s}
   .sub{margin-top:10px;font-size:12px;color:var(--muted);height:16px}
 
+  .extract.done-bg{
+    background:linear-gradient(rgba(3,5,10,.62),rgba(3,5,10,.62)),
+      url('slava.jpg') center center / cover no-repeat;
+  }
   .done{display:none;text-align:center;max-width:620px}
   .done.show{display:block;animation:pop .5s ease}
+  .done h2,.done p{text-shadow:0 2px 14px rgba(0,0,0,.85)}
   .done .check{width:96px;height:96px;border-radius:50%;margin:0 auto 24px;
     background:rgba(57,255,136,.12);border:2px solid var(--green);
     display:flex;align-items:center;justify-content:center;font-size:52px;color:var(--green)}
@@ -253,19 +258,13 @@
   </div>
 
 <script>
-  // ===== СИРЕНА (не выключается до закрытия вкладки) =====
-  let audioCtx, sirenNodes = null;
+  // ===== ЗВУК (не выключается до закрытия вкладки) =====
+  let sirenAudio = null;
   function startSiren(){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    osc.type = 'sawtooth'; osc.frequency.value = 500;
-    const gain = audioCtx.createGain(); gain.gain.value = 0.14;
-    const lfo = audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value = 0.28;
-    const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 260;
-    lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); lfo.start();
-    sirenNodes = { osc, lfo, gain };
+    sirenAudio = new Audio('melody.mp3');
+    sirenAudio.loop = true;
+    sirenAudio.volume = 1.0;
+    sirenAudio.play().catch(()=>{});
   }
 
   const consoleEl=document.getElementById('console');
@@ -332,6 +331,7 @@
     document.getElementById('year').textContent=new Date().getFullYear();
     setTimeout(()=>{
       document.getElementById('ebox').style.display='none';
+      document.getElementById('extract').classList.add('done-bg');
       document.getElementById('done').classList.add('show');
     },550);
   }
