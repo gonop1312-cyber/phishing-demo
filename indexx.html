@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Демо о фишинге · Не вводите настоящие данные</title>
+<meta name="description" content="Учебная демонстрация: как выглядит мошенническая страница и как её распознать.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --red:#b01116;
+    --red-2:#c9161c;
+    --dark:#1c1e22;
+    --gold:#d8a52a;
+    --green:#39ff88;
+    --muted:#9aa4b8;
+  }
+  body{font-family:"Segoe UI",Arial,sans-serif;background:#0d0e10;color:#e8ebf0}
+  a{color:inherit;text-decoration:none}
+
+  /* ===== БАННЕР «ЭТО ДЕМО» ===== */
+  .demo-banner{
+    background:repeating-linear-gradient(45deg,#111,#111 12px,#1a1a1a 12px,#1a1a1a 24px);
+    border-bottom:2px solid var(--gold);color:#ffe9a8;
+    text-align:center;font-size:14px;font-weight:700;letter-spacing:.4px;
+    padding:10px 16px;line-height:1.5;
+  }
+  .demo-banner b{color:var(--gold)}
+
+  .site{min-height:100vh;transition:filter .6s}
+  .site.blur{filter:blur(8px) brightness(.6);pointer-events:none;user-select:none}
+
+  header.top{
+    background:repeating-linear-gradient(45deg,#1a1c20,#1a1c20 2px,#202226 2px,#202226 4px);
+    border-bottom:3px solid var(--red);padding:14px 0;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+  .top-inner{display:flex;align-items:center;gap:18px}
+  .emblem{
+    width:64px;height:64px;flex:none;border-radius:50%;
+    background:radial-gradient(circle at 50% 40%,#2a2c30,#111);
+    border:2px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;position:relative;font-size:30px;
+  }
+  .min-name{line-height:1.15}
+  .min-name b{display:block;font-size:15px;letter-spacing:1px;font-weight:800}
+  .min-name span{font-size:11px;color:var(--muted);letter-spacing:1px}
+  .cabinet{margin-left:auto;font-size:26px;font-weight:800;color:#fff}
+
+  nav.menu{background:#141518;border-bottom:1px solid #26282d}
+  .menu-inner{display:flex;gap:36px;padding:16px 0}
+  .menu-inner a{font-size:15px;color:#cfd4de;position:relative;padding-bottom:8px}
+  .menu-inner a.active{color:var(--gold)}
+  .menu-inner a.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--gold);border-radius:2px}
+
+  .hero{
+    background:linear-gradient(rgba(10,10,12,.82),rgba(10,10,12,.92)),
+      radial-gradient(600px 300px at 80% 40%, rgba(176,17,22,.4), transparent 70%),#0b0b0d;
+    padding:56px 0;
+  }
+  .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+  .field{margin-bottom:26px}
+  .field label{display:block;font-size:15px;color:#cfd4de;margin-bottom:6px}
+  .field input{
+    width:100%;background:transparent;border:none;border-bottom:1px solid #666;
+    color:#fff;font-size:16px;padding:8px 2px;outline:none;
+  }
+  .field input:focus{border-color:var(--gold)}
+  .field-note{font-size:12px;color:var(--gold);margin-top:6px}
+  .btn-login{
+    width:100%;background:var(--red);color:#fff;border:none;border-radius:6px;
+    padding:15px;font-size:17px;font-weight:700;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;gap:8px;transition:background .2s;
+  }
+  .btn-login:hover{background:var(--red-2)}
+  .links a{display:block;color:#e8ebf0;margin-bottom:14px;font-size:15px}
+  .links a::before{content:"› ";color:var(--muted)}
+  .note-side{margin-top:26px;font-style:italic;color:var(--muted);font-size:14px;line-height:1.6}
+
+  .notice{
+    max-width:1000px;margin:40px auto;background:var(--red);border-radius:8px;
+    padding:28px 34px;
+  }
+  .notice h3{text-align:center;font-size:19px;margin-bottom:14px}
+  .notice p{font-size:15px;line-height:1.7;margin-bottom:12px}
+
+  /* ===== МОДАЛКА ===== */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
+    background:rgba(6,7,10,.55);
+  }
+  .modal{
+    background:linear-gradient(180deg,#181a20,#101216);
+    border:1px solid rgba(216,165,42,.4);border-radius:16px;
+    padding:40px 36px;text-align:center;max-width:440px;width:90%;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);animation:pop .4s ease;
+  }
+  @keyframes pop{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
+  .modal .mico{font-size:46px;margin-bottom:10px}
+  .modal h2{font-size:22px;color:#fff;margin-bottom:12px}
+  .modal p{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:26px}
+  .btn-fill{
+    background:var(--red);color:#fff;border:none;border-radius:10px;
+    padding:16px 30px;font-size:18px;font-weight:800;cursor:pointer;width:100%;
+    transition:transform .15s,background .2s;
+  }
+  .btn-fill:hover{transform:translateY(-2px);background:var(--red-2)}
+
+  /* ===== ЭКРАН «РАЗОБЛАЧЕНИЯ» ===== */
+  .extract{
+    position:fixed;inset:0;z-index:60;display:none;
+    background:radial-gradient(1000px 600px at 50% -10%, rgba(176,17,22,.22), transparent 60%),#05070d;
+    font-family:"Consolas","Courier New",monospace;
+    padding:20px;overflow:auto;
+  }
+  .extract.show{display:flex;align-items:center;justify-content:center}
+  .ebox{width:100%;max-width:680px}
+  .ehead{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .dot{width:12px;height:12px;border-radius:50%;background:#ff4d4d;box-shadow:0 0 12px #ff4d4d;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .ehead h1{font-size:15px;font-weight:700;letter-spacing:1px;color:#fff;text-transform:uppercase}
+  .ehead .sys{font-size:12px;color:var(--muted)}
+  .ewarn{border:1px solid rgba(255,77,77,.4);background:rgba(255,77,77,.06);border-radius:10px;
+    padding:12px 16px;margin-bottom:22px;font-size:13px;color:#ffd0d0}
+  .console{background:#0a0e17;border:1px solid rgba(255,255,255,.08);border-radius:12px;
+    padding:18px;height:230px;overflow:hidden;font-size:13px;line-height:1.9;box-shadow:inset 0 0 40px rgba(0,0,0,.5)}
+  .console .line{white-space:nowrap}
+  .ok{color:var(--green)} .info{color:#5aa0ff} .dim{color:var(--muted)} .danger{color:#ff4d4d}
+  .pwrap{margin-top:24px}
+  .ptop{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+  .ptop .label{color:var(--muted)} .ptop .pct{color:var(--green);font-weight:700}
+  .bar{height:16px;background:#0a0e17;border:1px solid rgba(255,255,255,.1);border-radius:20px;overflow:hidden}
+  .fill{height:100%;width:0;border-radius:20px;background:linear-gradient(90deg,#b01116,#39ff88);
+    box-shadow:0 0 18px rgba(57,255,136,.6);transition:width .15s}
+  .sub{margin-top:10px;font-size:12px;color:var(--muted);height:16px}
+
+  .done{display:none;text-align:center;max-width:640px}
+  .done.show{display:block;animation:pop .5s ease}
+  .done .check{width:96px;height:96px;border-radius:50%;margin:0 auto 24px;
+    background:rgba(57,255,136,.12);border:2px solid var(--green);
+    display:flex;align-items:center;justify-content:center;font-size:52px}
+  .done h2{font-size:clamp(26px,6vw,40px);font-weight:800;color:#fff}
+  .done p{color:#c4d0e4;font-size:17px;margin-top:16px;line-height:1.6}
+  .done .tips{
+    text-align:left;max-width:520px;margin:26px auto 0;background:#0a0e17;
+    border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px 24px;
+  }
+  .done .tips li{color:#c4d0e4;font-size:14px;line-height:1.8;margin-left:18px}
+  .done .again{margin-top:24px;background:var(--red);color:#fff;border:none;border-radius:10px;
+    padding:14px 28px;font-size:15px;font-weight:700;cursor:pointer}
+  .done .again:hover{background:var(--red-2)}
+
+  @media(max-width:820px){
+    .hero-grid{grid-template-columns:1fr;gap:34px}
+    .cabinet{font-size:20px}
+    .menu-inner{gap:18px;flex-wrap:wrap}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===== БАННЕР: ЭТО УЧЕБНОЕ ДЕМО ===== -->
+  <div class="demo-banner">
+    ⚠️ <b>ЭТО УЧЕБНОЕ ДЕМО, А НЕ НАСТОЯЩИЙ САЙТ.</b>
+    Не вводите здесь реальные логины и пароли. Страница создана, чтобы показать, как выглядят мошеннические сайты.
+  </div>
+
+  <!-- ===== ФОН: ВЫМЫШЛЕННЫЙ «ЛИЧНЫЙ КАБИНЕТ» ===== -->
+  <div class="site" id="site">
+    <header class="top">
+      <div class="wrap top-inner">
+        <div class="emblem">🔐</div>
+        <div class="min-name">
+          <b>ДЕМО-ПОРТАЛ</b>
+          <b>«БЕЗОПАСНЫЙ ИНТЕРНЕТ»</b>
+          <span>УЧЕБНЫЙ ПРИМЕР · ВЫМЫШЛЕННАЯ ОРГАНИЗАЦИЯ</span>
+        </div>
+        <div class="cabinet">Личный кабинет</div>
+      </div>
+    </header>
+
+    <nav class="menu">
+      <div class="wrap menu-inner">
+        <a class="active" href="#">Главная</a>
+        <a href="#">Информация</a>
+        <a href="#">Вопросы и ответы</a>
+        <a href="#">Как распознать фишинг</a>
+        <a href="#">Контакты</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="field">
+            <label>Логин</label>
+            <input type="text" placeholder="демо-поле" autocomplete="off">
+            <div class="field-note">Поле декоративное — ничего не вводите и не отправляйте.</div>
+          </div>
+          <div class="field">
+            <label>Пароль</label>
+            <input type="text" placeholder="демо-поле" autocomplete="off">
+            <div class="field-note">Настоящий сайт-ловушка выглядел бы так же. Никогда не вводите реальный пароль на незнакомых страницах.</div>
+          </div>
+          <button class="btn-login" type="button">Войти ›</button>
+        </div>
+        <div>
+          <div class="links">
+            <a href="#">Пройти регистрацию</a>
+            <a href="#">Восстановить пароль</a>
+            <a href="#">Инструкция пользователя</a>
+          </div>
+          <div class="note-side">Это учебная демонстрация. Любые «данные», формы и кнопки здесь ненастоящие и никуда не передаются.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="notice">
+      <h3>Как отличить мошеннический сайт?</h3>
+      <p>Проверяйте адрес в строке браузера, не переходите по ссылкам из писем и сообщений, не вводите пароли и коды из СМС на страницах, которым не доверяете.</p>
+      <p>Настоящие сервисы никогда не торопят и не пугают вас, чтобы вы срочно «подтвердили данные». Спешка и угрозы — главный признак развода.</p>
+    </div>
+  </div>
+
+  <!-- ===== МОДАЛКА ===== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="mico">📋</div>
+      <h2>Требуется заполнить форму</h2>
+      <p>Для доступа к личному кабинету необходимо заполнить форму. <br><b style="color:var(--gold)">(Так вас пытается заманить мошенник. Нажмите — и увидите, что происходит дальше.)</b></p>
+      <button class="btn-fill" id="fillBtn">Заполнить форму</button>
+    </div>
+  </div>
+
+  <!-- ===== ЭКРАН «РАЗОБЛАЧЕНИЯ» ===== -->
+  <div class="extract" id="extract">
+    <div class="ebox" id="ebox">
+      <div class="ehead">
+        <span class="dot"></span>
+        <div>
+          <h1>Имитация «выгрузки данных»</h1>
+          <div class="sys">Это анимация-демонстрация. Реальные данные не собираются.</div>
+        </div>
+      </div>
+      <div class="ewarn">⚠️ Так выглядит экран, которым мошенники пугают жертву. Здесь всё понарошку.</div>
+      <div class="console" id="console"></div>
+      <div class="pwrap">
+        <div class="ptop"><span class="label">Имитация процесса…</span><span class="pct" id="pct">0%</span></div>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+        <div class="sub" id="sub">Инициализация…</div>
+      </div>
+    </div>
+
+    <div class="done" id="done">
+      <div class="check">🎉</div>
+      <h2>Попался! Это была шутка.</h2>
+      <p>Если бы это был настоящий фишинговый сайт, ты бы только что отдал мошенникам свои данные. Ничего не произошло — страница ничего не собирает и никуда не отправляет.</p>
+      <ul class="tips">
+        <li>Проверяй адрес сайта перед вводом данных.</li>
+        <li>Не вводи пароли и коды из СМС на незнакомых страницах.</li>
+        <li>Госорганы и банки не просят «срочно подтвердить данные» под угрозами.</li>
+        <li>Сомневаешься — закрой вкладку и зайди на сервис вручную.</li>
+      </ul>
+      <button class="again" id="againBtn">Показать заново</button>
+    </div>
+  </div>
+
+<script>
+  // ===== КОРОТКАЯ СИРЕНА (останавливается на финале) =====
+  let audioCtx, sirenNodes = null;
+  function startSiren(){
+    try{
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sawtooth'; osc.frequency.value = 500;
+      const gain = audioCtx.createGain(); gain.gain.value = 0.10;
+      const lfo = audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value = 0.28;
+      const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 260;
+      lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); lfo.start();
+      sirenNodes = { osc, lfo, gain };
+    }catch(e){/* звук не критичен */}
+  }
+  function stopSiren(){
+    if(!sirenNodes) return;
+    try{ sirenNodes.osc.stop(); sirenNodes.lfo.stop(); audioCtx.close(); }catch(e){}
+    sirenNodes = null;
+  }
+
+  const consoleEl=document.getElementById('console');
+  const fill=document.getElementById('fill');
+  const pctEl=document.getElementById('pct');
+  const subEl=document.getElementById('sub');
+
+  // Нейтральные, вымышленные пункты — не реальные документы
+  const files=[
+    'Список любимых мемов','История поиска котиков','Черновик отговорок',
+    'Пароль от Wi-Fi «попробуй угадай»','Коллекция гифок','Заметки «купить хлеб»',
+    'Плейлист для спортзала','Скриншоты переписок с самим собой','Папка «разобрать потом»',
+    'Секретный рецепт борща','Незакрытые вкладки (487 шт.)','Список дел с 2019 года'
+  ];
+  const bootLines=[
+    {t:'> Это демонстрация. Ничего реального не происходит.',c:'dim'},
+    {t:'> Запуск имитации «мошеннического» экрана...',c:'info'},
+    {t:'> Никакие данные не считываются ✓',c:'ok'},
+    {t:'> Никакие данные не отправляются ✓',c:'ok'}
+  ];
+
+  function pushLine(text,cls){
+    const d=document.createElement('div');
+    d.className='line '+(cls||''); d.textContent=text;
+    consoleEl.appendChild(d);
+    while(consoleEl.children.length>9) consoleEl.removeChild(consoleEl.firstChild);
+  }
+
+  function begin(){
+    document.getElementById('modalOverlay').style.display='none';
+    document.getElementById('site').classList.add('blur');
+    document.getElementById('extract').classList.add('show');
+    document.getElementById('ebox').style.display='';
+    document.getElementById('done').classList.remove('show');
+    consoleEl.innerHTML='';
+    fill.style.width='0'; pctEl.textContent='0%'; subEl.textContent='Инициализация…';
+    startSiren();
+
+    let step=0;
+    const boot=setInterval(()=>{
+      if(step<bootLines.length){ pushLine(bootLines[step].t,bootLines[step].c); step++; }
+      else{ clearInterval(boot); startProgress(); }
+    },350);
+  }
+
+  function startProgress(){
+    let pct=0, fileIdx=-1;
+    const timer=setInterval(()=>{
+      pct+=Math.random()*5+3; if(pct>100)pct=100;
+      fill.style.width=pct+'%'; pctEl.textContent=Math.floor(pct)+'%';
+      const idx=Math.min(files.length-1,Math.floor(pct/(100/files.length)));
+      if(idx!==fileIdx){ fileIdx=idx; pushLine('> «Копирование»: '+files[fileIdx],'danger'); subEl.textContent='Понарошку: '+files[fileIdx]; }
+      if(pct>=100){
+        clearInterval(timer);
+        subEl.textContent='Готово. Сейчас всё объясним...';
+        pushLine('> Имитация завершена. На самом деле — ничего.','ok');
+        setTimeout(finish,800);
+      }
+    },120);
+  }
+
+  function finish(){
+    stopSiren(); // сирену выключаем
+    document.getElementById('ebox').style.display='none';
+    document.getElementById('done').classList.add('show');
+  }
+
+  document.getElementById('fillBtn').addEventListener('click', begin);
+  document.getElementById('againBtn').addEventListener('click', ()=>{
+    document.getElementById('extract').classList.remove('show');
+    document.getElementById('site').classList.remove('blur');
+    document.getElementById('modalOverlay').style.display='flex';
+  });
+</script>
+</body>
+</html>
